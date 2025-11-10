@@ -53,6 +53,12 @@ For instance:
 
 It is up to you to implement the solution you feel works best.
 
+
+I implemented these, I got error on firewalld implementation, but it just turned out that I had to install it in the servers first. 
+
+
+
+
 # BONUS QUESTION
 
 If you implement these tasks within one or more roles, you will gain enlightenment and additional karma.
