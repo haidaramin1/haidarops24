@@ -1,0 +1,45 @@
+---
+- name: Ensure MariaDB-server is installed
+  ansible.builtin.package:
+    name: mariadb-server
+    state: present
+  become: true
+
+- name: Ensure mariadb service is enabled at boot
+  ansible.builtin.systemd:
+    name: mariadb
+    enabled: yes
+  register: enable_result
+  become: true
+
+- name: Ensure MariaDB service is enabled and started
+  ansible.builtin.service:
+    name: mariadb
+    enabled: true
+    state: started
+  become: true
+
+- name: Create a new database called 'webappdb'
+  community.mysql.mysql_db:
+    name: webappdb
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  become: true
+
+- name: Create database user 'webappuser' with secure password
+  community.mysql.mysql_user:
+    name: webappuser
+    password: "{{ db_password }}"
+    priv: '*.*:ALL'
+    state: present
+    login_unix_socket: /var/lib/mysql/mysql.sock
+  become: true
+
+- name: Copy .md files to deploy user home
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /home/deploy
+    owner: deploy
+    mode: "0644"
+  with_fileglob: "../files/*.md"
+  become: true

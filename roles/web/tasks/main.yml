@@ -1,0 +1,68 @@
+---
+
+- name: Ensure python3-cryptography is installed
+  ansible.builtin.package:
+    name: python3-cryptography
+    state: present
+  become: true
+
+- name: Ensure nginx default config exists
+  ansible.builtin.copy:
+    src: /etc/nginx/nginx.conf.default
+    dest: /etc/nginx/nginx.conf
+    remote_src: yes
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+  when: not ansible_facts['files']['/etc/nginx/nginx.conf'].exists | default(false)
+
+- name: Ensure /etc/pki/nginx directory exists
+  ansible.builtin.file:
+    path: /etc/pki/nginx
+    state: directory
+    mode: '0755'
+    owner: root
+  become: true
+
+- name: Ensure /etc/pki/nginx/private directory exists
+  ansible.builtin.file:
+    path: /etc/pki/nginx/private
+    state: directory
+    mode: '0700'
+    owner: root
+  become: true
+
+- name: Ensure private key exists
+  community.crypto.openssl_privatekey:
+    path: /etc/pki/nginx/private/server.key
+  become: true
+
+- name: Create self-signed certificate
+  community.crypto.x509_certificate:
+    path: /etc/pki/nginx/server.crt
+    privatekey_path: /etc/pki/nginx/private/server.key
+    provider: selfsigned
+  become: true
+
+- name: Deploy nginx virtual host template
+  ansible.builtin.template:
+    src: templates/example.internal.conf.j2
+    dest: /etc/nginx/conf.d/example.internal.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload nginx
+  become: true
+
+- name: Add several users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    state: present
+    groups: "{{ item.groups }}"
+  loop:
+    - { name: "alovelace", groups: ["wheel", "video", "audio"] }
+    - { name: "aturing", groups: ["tape"] }
+    - { name: "edijkstra", groups: ["tcpdump"] }
+    - { name: "ghopper", groups: ["wheel", "audio"] }
+  become: true

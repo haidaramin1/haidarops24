@@ -1,0 +1,107 @@
+.
+├── 01
+│   └── README.md
+├── 02
+│   ├── ansible.cfg.example
+│   └── README.md
+├── 03
+│   ├── 03-uninstall-software.yml
+│   ├── README.md
+│   └── site.yml
+├── 04
+│   ├── 04-uninstall-webserver.yml
+│   └── README.md
+├── 05
+│   ├── 05-web.yml
+│   ├── install-cert.yml
+│   └── README.md
+├── 06
+│   ├── 06-web.yml
+│   ├── hosts
+│   └── README.md
+├── 07
+│   ├── 07-mariadb.yml
+│   ├── hosts
+│   └── README.md
+├── 08
+│   └── 08-mariadb-config.yml
+├── 09
+│   ├── 09-mariadb-password.yml
+│   ├── password
+│   └── vault.yml
+├── 11
+│   ├── globmd.yml
+│   └── loopusers.yml
+├── 12
+│   └── 12-roles.yml
+├── 12-roles.yml
+├── ansible.cfg
+├── example.internal.conf
+├── files
+│   ├── bar.md
+│   ├── baz.md
+│   ├── foo.md
+│   ├── https.conf
+│   └── index.html
+├── folder_structurs.txt
+├── hosts
+├── https.conf
+├── index.html
+├── README.md
+├── roles
+│   ├── db
+│   │   ├── defaults
+│   │   │   └── main.yml
+│   │   ├── files
+│   │   │   ├── bar.md
+│   │   │   ├── baz.md
+│   │   │   └── foo.md
+│   │   ├── handlers
+│   │   │   └── main.yml
+│   │   ├── meta
+│   │   │   └── main.yml
+│   │   ├── README.md
+│   │   ├── tasks
+│   │   │   ├── main.yml
+│   │   │   ├── password
+│   │   │   └── vault.yml
+│   │   ├── templates
+│   │   ├── tests
+│   │   │   ├── inventory
+│   │   │   └── test.yml
+│   │   └── vars
+│   │       └── main.yml
+│   └── web
+│       ├── defaults
+│       │   └── main.yml
+│       ├── files
+│       │   ├── example.internal.conf
+│       │   ├── https.conf
+│       │   └── index.html
+│       ├── handlers
+│       │   └── main.yml
+│       ├── meta
+│       │   └── main.yml
+│       ├── README.md
+│       ├── tasks
+│       │   └── main.yml
+│       ├── templates
+│       │   └── example.internal.conf.j2
+│       ├── tests
+│       │   ├── inventory
+│       │   └── test.yml
+│       └── vars
+│           └── main.yml
+├── screenshots
+│   ├── MariaDBActive.png
+│   └── Screenshot from 2025-11-03 19-18-55.png
+├── templates
+│   └── example.internal.conf.j2
+├── templates_10
+│   ├── 10-web-template.yml
+│   ├── example.internal.conf.j2
+│   └── README.md
+├── tree.txt
+└── webserver.yml
+
+35 directories, 70 files

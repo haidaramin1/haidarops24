@@ -1,0 +1,24 @@
+---
+- name: Copy HTTPS configuration to nginx
+  hosts: web
+  become: true
+  tasks:
+    - name: Copy https.conf to nginx conf.d directory
+      ansible.builtin.copy:
+        src: https.conf
+        dest: /etc/nginx/conf.d/https.conf
+        owner: root
+        group: root
+        mode: '0644'
+        
+    - name: Create a directory if it does not exist
+          ansible.builtin.file:
+          path: /etc/some_directory
+      state: directory
+      mode: '0755'
+
+
+    - name: Restart nginx for new configs
+      ansible.builtin.service:
+       name: nginx
+       state: restarted

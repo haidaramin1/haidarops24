@@ -1,0 +1,81 @@
+---
+- name: Security Compliance Checks
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+
+    - name: verify_os_version
+      ansible.builtin.assert:
+        that:
+          - ansible_distribution == "AlmaLinux"
+          - ansible_distribution_version.startswith("10")
+        fail_msg: "Host must be AlmaLinux 10.x"
+
+    - name: collect_packages
+      ansible.builtin.package_facts:
+
+    - name: collect_services
+      ansible.builtin.service_facts:
+
+    - name: forbidden_packages_check
+      ansible.builtin.assert:
+        that:
+          - "item not in ansible_facts.packages"
+        fail_msg: "Forbidden package {{ item }} installed"
+      loop:
+        - telnet-server
+        - rsh-server
+        - vsftpd
+        - tftp-server
+        - xinetd
+
+    - name: firewall_ssh_package_check
+      ansible.builtin.assert:
+        that:
+          - "'firewalld' in ansible_facts.packages"
+          - "'openssh-server' in ansible_facts.packages or 'openssh' in ansible_facts.packages"
+        fail_msg: "firewalld or openssh-server missing"
+
+    - name: firewall_ssh_service_check
+      ansible.builtin.assert:
+        that:
+          - "'firewalld.service' in ansible_facts.services"
+          - "ansible_facts.services['firewalld.service'].state == 'running'"
+          - "'sshd.service' in ansible_facts.services"
+          - "ansible_facts.services['sshd.service'].state == 'running'"
+
+    - name: selinux_status_check
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.selinux is defined"
+          - "ansible_facts.selinux.status != 'disabled'"
+        fail_msg: "SELinux disabled"
+
+    - name: sudo_package_check
+      ansible.builtin.assert:
+        that:
+          - "'sudo' in ansible_facts.packages"
+
+    - name: cron_package_check
+      ansible.builtin.assert:
+        that:
+          - "'cronie' in ansible_facts.packages"
+
+    - name: auditd_package_check
+      ansible.builtin.assert:
+        that:
+          - "'audit' in ansible_facts.packages"
+        fail_msg: "auditd not installed"
+
+    - name: collect_users
+      ansible.builtin.getent:
+        database: passwd
+      register: users
+
+    - name: Check if user 'deploy' exists
+      ansible.builtin.assert:
+        that:
+          - "'deploy' in ansible_facts.getent_passwd"
+        fail_msg: "user 'deploy' missing"

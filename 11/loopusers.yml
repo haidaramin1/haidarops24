@@ -1,0 +1,14 @@
+---
+- hosts: web
+  become: true
+  tasks: 
+  - name: Add several users
+    ansible.builtin.user:
+      name: "{{ item.name }}"
+      state: present
+      groups: "{{ item.groups }}"
+    loop:
+      - { name: "alovelace", groups: ["wheel, video, audio"]}
+      - { name: "aturing", groups: "tape" }
+      - { name: "edijkstra", groups: "tcpdump"}
+      - { name: "ghopper", groups: ["wheel, audio"]}

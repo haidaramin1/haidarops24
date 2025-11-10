@@ -1,0 +1,22 @@
+---
+- name: Fix deploy user's sudo rule to require password
+  hosts: all
+  become: true
+
+  vars:
+    deploy_password_hash: "$6$R8jP8pAdG5$4pm1D8nSECFbUvh2cdE1XXb14uBCdZTFM2T2krHtVjKULrUMpPfh2IkskoVfobQTzXYHlq7WQhQfM1CGwFDI2/" 
+  tasks:
+    - name: Ensure deploy user has a password set
+      ansible.builtin.user:
+        name: deploy
+        password: "{{ deploy_password_hash }}"
+
+    - name: Update deploy sudo rule to require password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/deploy
+        create: true
+        line: "deploy ALL=(ALL) ALL"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: "/usr/sbin/visudo -cf %s"
