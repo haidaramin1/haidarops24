@@ -1,25 +1,28 @@
 ---
 - name: Security Compliance Checks
-  hosts: all
-  become: true
-  gather_facts: true
+  hosts: all # Run on all hosts
+  become: true # Gain root privileges
+  gather_facts: true # Gather system facts, all of them to identify OS, packages, services and users
+
+
 
   tasks:
 
-    - name: verify_os_version
+    - name: verify_os_version #It's appropriate to run this, to ensure it's AlmaLinux.10
       ansible.builtin.assert:
         that:
-          - ansible_distribution == "AlmaLinux"
-          - ansible_distribution_version.startswith("10")
-        fail_msg: "Host must be AlmaLinux 10.x"
+          - ansible_distribution == "AlmaLinux" #Check for AlmaLinux
+          - ansible_distribution_version.startswith("10") #Check for version 10.x
+        fail_msg: "Host must be AlmaLinux 10.x" #If it doesnt comply, it means it aint almalinux 10.x
 
-    - name: collect_packages
+
+    - name: collect_packages #Collects package facts to check installed packages
       ansible.builtin.package_facts:
 
-    - name: collect_services
+    - name: collect_services #Collects service facts to check running services
       ansible.builtin.service_facts:
 
-    - name: forbidden_packages_check
+    - name: forbidden_packages_check #Check for forbidden packages, 
       ansible.builtin.assert:
         that:
           - "item not in ansible_facts.packages"
@@ -31,14 +34,14 @@
         - tftp-server
         - xinetd
 
-    - name: firewall_ssh_package_check
+    - name: firewall_ssh_package_check #Check that firewalld and openssh-server packages are installed
       ansible.builtin.assert:
         that:
           - "'firewalld' in ansible_facts.packages"
           - "'openssh-server' in ansible_facts.packages or 'openssh' in ansible_facts.packages"
         fail_msg: "firewalld or openssh-server missing"
 
-    - name: firewall_ssh_service_check
+    - name: firewall_ssh_service_check #Check that firewalld and sshd services are running
       ansible.builtin.assert:
         that:
           - "'firewalld.service' in ansible_facts.services"
@@ -46,36 +49,36 @@
           - "'sshd.service' in ansible_facts.services"
           - "ansible_facts.services['sshd.service'].state == 'running'"
 
-    - name: selinux_status_check
+    - name: selinux_status_check #Check that SELinux is enabled and active
       ansible.builtin.assert:
         that:
           - "ansible_facts.selinux is defined"
           - "ansible_facts.selinux.status != 'disabled'"
         fail_msg: "SELinux disabled"
 
-    - name: sudo_package_check
+    - name: sudo_package_check #Check that sudo package is installed
       ansible.builtin.assert:
         that:
           - "'sudo' in ansible_facts.packages"
 
-    - name: cron_package_check
+    - name: cron_package_check #Check that cronie package is installed
       ansible.builtin.assert:
         that:
           - "'cronie' in ansible_facts.packages"
 
-    - name: auditd_package_check
+    - name: auditd_package_check #Check that auditd package is installed
       ansible.builtin.assert:
         that:
           - "'audit' in ansible_facts.packages"
         fail_msg: "auditd not installed"
 
-    - name: collect_users
+    - name: collect_users #Collect user information from the system
       ansible.builtin.getent:
         database: passwd
       register: users
 
-    - name: Check if user 'deploy' exists
+    - name: Check if user 'deploy' exists #Verify that the 'deploy' user is present on the system
       ansible.builtin.assert:
         that:
           - "'deploy' in ansible_facts.getent_passwd"
-        fail_msg: "user 'deploy' missing"
+        fail_msg: "user 'deploy' missing" #If the 'deploy' user is not found, this will be shown!
