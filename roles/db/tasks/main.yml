@@ -1,3 +1,10 @@
+#I will be making most of the documentations in here and web's tasks/main.yml as I had to adjust some of the playbooks based on the errors I got while running them.
+
+#In this file we will be installing MariaDB server, enabling and starting the service, creating a database and a user with all privileges on it, and copying .md files to deploy user home directory.
+#I have commented on most/all of the packages in the other file, so I will not comment on those again here except if they arent used in the other file.
+
+
+
 ---
 - name: Ensure required Python MySQL package is installed
   ansible.builtin.package:
@@ -7,19 +14,26 @@
 # Added this package after getting an error fatal: [192.168.121.44]: FAILED! => {"changed": false, "msg": "A MySQL module is required: for Python 2.7 either PyMySQL, or MySQL-python, or for Python 3.X mysqlclient or PyMySQL. Consider setting ansible_python_interpreter to use the intended Python version."}
 
 
+#Added the playbooks from our previous tasks here. I had to adjust some of them based on the errors I got when running the playbook.
+
+
+
+#Install MariaDB server
 - name: Ensure MariaDB-server is installed
   ansible.builtin.package:
     name: mariadb-server
     state: present
   become: true
 
+# Enable boot at startup and start the service
 - name: Ensure mariadb service is enabled at boot
   ansible.builtin.systemd:
     name: mariadb
     enabled: yes
-  register: enable_result
+  register: enable_result #Registers the result of enabling the service to a variable
   become: true
 
+# Start it immidiately
 - name: Ensure MariaDB service is enabled and started
   ansible.builtin.service:
     name: mariadb
@@ -27,6 +41,7 @@
     state: started
   become: true
 
+#Creates a database and a user with all privileges on it
 - name: Create a new database called 'webappdb'
   community.mysql.mysql_db:
     name: webappdb
@@ -34,6 +49,7 @@
     login_unix_socket: /var/lib/mysql/mysql.sock
   become: true
 
+#Here the user get's a secure password from the vault file
 - name: Create database user 'webappuser' with secure password
   community.mysql.mysql_user:
     name: webappuser
@@ -43,11 +59,13 @@
     login_unix_socket: /var/lib/mysql/mysql.sock
   become: true
 
+  
+#Copy's .md files to deploy user home directory 
 - name: Copy .md files to deploy user home
   ansible.builtin.copy:
-    src: "{{ item }}"
+    src: "{{ item }}" #Takes each file found by the with_fileglob loop
     dest: /home/deploy
     owner: deploy
     mode: "0644"
-  with_fileglob: "../files/*.md"
+  with_fileglob: "../files/*.md" #Loops for all .md files in the files directory
   become: true

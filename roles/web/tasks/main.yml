@@ -1,75 +1,83 @@
----
+#I will make most of the comments on this file and the db-task file. I have also commented out in the db-task files. 
 
+#I have taken the playbook from earlier tasks and changed them based on the errors I got.
+#We will be installing and booting Nginx, create SSL certificate, copy HTTPS configuration, and create users with specific groups.
+
+
+
+---
+# Install nginx 
 - name: Ensure nginx is installed
-  ansible.builtin.package:
+  ansible.builtin.package: #Using the package module to install nginx
+    name: nginx #The name of the package to be installed
+    state: latest #Ensures the latest version is installed
+  become: true #Gains root privileges for the task
+
+# Start nginx
+- name: Ensure nginx is started and enabled
+  ansible.builtin.service:
     name: nginx
-    state: latest
+    state: started #Ensures the service is running
+    enabled: true #Ensures the service starts at boot
   become: true
 
-
+# Install python3-cryptography for SSL
 - name: Ensure python3-cryptography is installed
   ansible.builtin.package:
     name: python3-cryptography
     state: present
   become: true
 
-- name: Ensure nginx default config exists
-  ansible.builtin.copy:
-    src: /etc/nginx/nginx.conf.default
-    dest: /etc/nginx/nginx.conf
-    remote_src: yes
-    owner: root
-    group: root
-    mode: '0644'
-  become: true
-  when: not ansible_facts['files']['/etc/nginx/nginx.conf'].exists | default(false)
-
+# Create directories for SSL
 - name: Ensure /etc/pki/nginx directory exists
   ansible.builtin.file:
-    path: /etc/pki/nginx
-    state: directory
-    mode: '0755'
-    owner: root
+    path: /etc/pki/nginx #Path for SSL certificates
+    state: directory #Ensures the directory exists
+    mode: '0755' #Sets the permissions
+    owner: root #Sets the owner to root
   become: true
 
 - name: Ensure /etc/pki/nginx/private directory exists
   ansible.builtin.file:
-    path: /etc/pki/nginx/private
-    state: directory
-    mode: '0700'
-    owner: root
+    path: /etc/pki/nginx/private #Path for private keys
+    state: directory 
+    mode: '0700' #More restrictive permissions for private keys since it's more sensitive information
+    owner: root 
   become: true
 
+# Generate SSL certificate
 - name: Ensure private key exists
-  community.crypto.openssl_privatekey:
-    path: /etc/pki/nginx/private/server.key
+  community.crypto.openssl_privatekey: #Generates a private key for SSL
+    path: /etc/pki/nginx/private/server.key #Path to store the private key
   become: true
 
 - name: Create self-signed certificate
-  community.crypto.x509_certificate:
-    path: /etc/pki/nginx/server.crt
+  community.crypto.x509_certificate: #builtin module to create x509 certificates
+    path: /etc/pki/nginx/server.crt #Path to store the certificate
     privatekey_path: /etc/pki/nginx/private/server.key
-    provider: selfsigned
+    provider: selfsigned #Indicates that this is a self-signed certificate
   become: true
 
-- name: Deploy nginx virtual host template
-  ansible.builtin.template:
-    src: templates/example.internal.conf.j2
-    dest: /etc/nginx/conf.d/example.internal.conf
+# Copy HTTPS configuration
+- name: Copy HTTPS configuration file
+  ansible.builtin.copy: #The builtin copy module to copy files
+    src: files/https.conf #Source for HTTPS configuration
+    dest: /etc/nginx/conf.d/https.conf #Destination path on the server
     owner: root
     group: root
     mode: '0644'
-  notify: reload nginx
+    notify: Reload nginx #Notifies the handler to reload nginx if this task makes changes
   become: true
 
-- name: Add several users
-  ansible.builtin.user:
+# Make a loop to create multiple users with specific groups
+- name: Ensure user accounts exist
+  ansible.builtin.user: 
     name: "{{ item.name }}"
     state: present
     groups: "{{ item.groups }}"
   loop:
-    - { name: "alovelace", groups: ["wheel", "video", "audio"] }
+    - { name: "alovelace", groups: ["wheel","audio"] }
     - { name: "aturing", groups: ["tape"] }
     - { name: "edijkstra", groups: ["tcpdump"] }
-    - { name: "ghopper", groups: ["wheel", "audio"] }
+    - { name: "ghopper", groups: ["wheel","audio"] }
   become: true

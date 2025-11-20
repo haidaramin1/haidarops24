@@ -1,2 +1,7 @@
 ---
-# handlers file for web
+# Handlersruns only when notified by other tasks
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded  # reload instead of restarted to avoid downtime
+  become: true
