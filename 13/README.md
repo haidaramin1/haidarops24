@@ -21,3 +21,18 @@ Also note the difference between `restarted` and `reloaded` in the [ansible.buil
 
 In order for `nginx` to pick up any configuration changes, it's enough to do a `reload` instead of
 a full `restart`.
+
+
+
+First I put the playbook with reload instead of restart in the handler folder, and I removed the old snippet from main.yml
+´- name: Restart nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
+  become: true
+'
+
+to this, which notifies IF the handler is triggered when there's a change in the template. 
+
+
+Reloaded means it'll not restart and just reload if there's any changes. The pro's with this kind of appproach is to minimize downtime or disturbance to the server.  

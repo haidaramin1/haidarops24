@@ -3,7 +3,7 @@ ansible_user=deploy
 ansible_ssh_private_key_file=/home/hailux/devops24/lab_environment/deploy_key
 
 [db]
-192.168.121.179
+192.168.121.44
 
 [web]
-192.168.121.64
+192.168.121.86
