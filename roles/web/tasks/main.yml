@@ -66,7 +66,7 @@
     owner: root
     group: root
     mode: '0644'
-    notify: Reload nginx #Notifies the handler to reload nginx if this task makes changes
+  notify: Reload nginx #Notifies the handler to reload nginx if this task makes changes. Corrected the indentation here.
   become: true
 
 # Make a loop to create multiple users with specific groups
